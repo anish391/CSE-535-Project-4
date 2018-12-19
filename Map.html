@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+  
+  <head>
+    <title>Data Analytics</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+	<link rel="shortcut icon" href="images/favicon.ico">
+    <style>
+
+        #map {
+           height: 100%;
+           width: 100%;
+         }
+
+
+         .gm-style-iw {
+    height: 200px;
+    width: 500px;
+}
+    #distance
+    {
+      height: 100%;
+      width: 0%;
+      float:right;
+    }
+
+    #weatherDisplay
+    {
+      height: 0%;
+      width: 25%;
+      float:right;
+    }
+         /* Optional: Makes the sample page fill the window. */
+         html, body {
+           height: 100%;
+           margin: 0;
+           padding: 0;
+           background-color: #242f3e;
+         }
+         .controls {
+           margin-top: 10px;
+           border: 1px solid transparent;
+           border-radius: 2px 0 0 2px;
+           box-sizing: border-box;
+           -moz-box-sizing: border-box;
+           height: 40px;
+           outline: none;
+           display: inline;
+           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+         }
+         #distance {
+            font-family: 'Verdana','sans-serif';
+            line-height: 20px;
+            padding-left: 10px;
+            position: fixed;
+            overflow: auto;
+            top:0;
+            padding-left: 5px;
+            background-color:#dcdcdc;
+            color: white;
+            float: right;
+            right: 0;
+            border-color: black;
+            border: 1px solid black;
+            padding-left: 5px;
+            border-left: 5px;
+          }
+
+          #distance select, #distance input {
+            font-size: 10px;
+
+          }
+
+
+          #distance i {
+            font-size: 12px;
+            float: auto;
+
+          }
+
+          #weatherDisplay {
+             font-family: 'Verdana','sans-serif';
+             line-height: 20px;
+             padding-left: 10px;
+             position: fixed;
+             overflow: auto;
+             bottom:0;
+             padding-left: 5px;
+             background-color:black;
+             color: white;
+             float: right;
+             right: 0;
+             border-color: black;
+             border: 2px solid black;
+             padding-left: 5px;
+             border-left: 5px;
+           }
+
+           #distance select, #distance input {
+             font-size: 10px;
+
+           }
+
+
+           #distance i {
+             font-size: 12px;
+             float: auto;
+
+           }
+
+
+         #origin-input,
+         #destination-input {
+           background-color: #242f3e;
+           font-family: Roboto;
+           font-size: 15px;
+           font-weight: 300;
+           margin-left: 12px;
+           margin-bottom: 10px;
+           padding: 0 11px 0 13px;
+           text-overflow: ellipsis;
+           width: 200px;
+           color: white;
+         }
+
+         #origin-input:focus,
+         #destination-input:focus {
+           border-color: #242f3e;
+         }
+         button,a{
+           font-family: Verdana;
+           font-size: 12px;
+           color:white;
+
+         }
+         a
+         {
+           text-decoration: none;
+         }
+         #mode-selector {
+           color: white;
+           background-color: #242f3e;
+           margin-left: 12px;
+           padding: 5px 11px 10px 11px;
+           width:100px;
+           height:40px;
+         }
+
+         #weathermap {
+           color: white;
+           background-color: #242f3e;
+           margin-left: 12px;
+           padding: 5px 11px 10px 11px;
+           width:130px;
+           height:40px;
+           font-family: Verdana;
+           font-size: 13px;
+         }
+
+         #mode-selector label {
+           font-family: Verdana;
+           font-size: 13px;
+
+         }
+         table{
+           color:black !important;
+         }
+         .adp{
+           color: black !important;
+
+         }
+
+         .adp table,.adp-list
+         {
+           background-color: #dcdcdc !important;
+           font-family: Verdana !important;
+           font-size: 12px !important;
+           padding-left: 15px !important;
+
+         }
+         .adp-placemark
+         {
+           border:none !important;
+
+         }
+         ::-webkit-scrollbar {
+        display: none;
+    }
+         .adp-summary
+         {
+           font-size: 15px !important;
+           font-style: bold !important;
+           text-align: center !important;
+           font-weight: bold !important;
+         }
+
+         .adp-directions
+         {
+           display: none !important;
+         }
+         p
+         {
+           padding-left: 15px;
+           color: black;
+         }
+         h5
+         {
+           text-align: center;
+           color:white;
+           background-color:#242f3e;
+           top:0;
+           padding-top: 1px;
+           margin: 0;
+           font-family: Verdana;
+         }
+
+         .gm-style {
+       border-radius: 2px;
+       background-color: rgb(255, 255, 255) !important;
+       top: 1px;
+       left: 1px;
+       }
+
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+    var map;
+    var latitudeOrigin;
+    var latitudeDestination,longitudeOrigin,longitudeDestination
+    var myLocation = { lat: 38.712, lng: -74.006};
+    ///This function initializes the map with the specific map coordinates and zoom and required styles
+    function initMap()
+    {
+
+
+      map=new google.maps.Map(document.getElementById('map'),
+    {
+      center: myLocation,
+      zoom:2,
+      mapTypeControlOptions: {
+              style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+              position: google.maps.ControlPosition.BOTTOM_CENTER,
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+          },
+      styles: [
+            {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+            {
+              featureType: 'administrative.locality',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'geometry',
+              stylers: [{color: '#263c3f'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#6b9a76'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry',
+              stylers: [{color: '#38414e'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#212a37'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#9ca5b3'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry',
+              stylers: [{color: '#746855'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#1f2835'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#f3d19c'}]
+            },
+            {
+              featureType: 'transit',
+              elementType: 'geometry',
+              stylers: [{color: '#2f3948'}]
+            },
+            {
+              featureType: 'transit.station',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'geometry',
+              stylers: [{color: '#17263c'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#515c6d'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.stroke',
+              stylers: [{color: '#17263c'}]
+            }
+          ]
+    });
+    //This function attaches two origin and destination input id's with the map and creates directions handlers
+    var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+    var markerArray = [];
+    var locations = [
+         ['Dublin', 53.3498,-6.2603, 1],
+         ['Paris', 48.8566, 2.3522, 2],
+         ['Buenos Aires', -34.6037,-58.3816, 3],
+         ['Sydney', -33.8688,151.2093, 4],
+          ['NYC', 40.715886, -74.005087, 5],
+           ['Delhi', 28.610228, 77.210797, 6],
+            ['Mexico', 19.430682, -99.132330, 7],
+              ['California', 36.7783, -119.4179, 8],
+              ['Bangkok', 13.7563, 100.5018, 9]
+    ];
+    var size = [7100,51392,2571,7037,125385,46903,55523,5031,27630];
+
+    for (i = 0; i < locations.length; i++) {
+      size[i] = map_range(size[i],20000,100000,10,50);
+
+         marker = new google.maps.Marker({
+         position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+         map: map,
+         animation: google.maps.Animation.DROP,
+         icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: size[i],
+        fillColor: "#F00",
+        fillOpacity: 0.5,
+        strokeWeight: 0.0
+    }
+    });
+
+markerArray.push(marker);
+    google.maps.event.addListener(markerArray[i], 'click', (function (index) {
+      return function(){
+              drawChart(index,this);
+        };
+      })(markerArray.length-1));
+
+}
+
+
+}
+
+
+
+
+        function drawChart(i,marker) {
+          console.log(i);
+          if (i == 0) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     1978],
+              ['Crime',      0],
+              ['Infrastructure',  1135],
+              ['Social Unrest', 2000],
+              ['Politics',    1987]
+            ]);
+          } else if (i == 1) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     14861],
+              ['Crime',      15424],
+              ['Infrastructure',  7426],
+              ['Social Unrest', 1885],
+              ['Politics',    11796]
+            ]);
+          }
+          else if (i == 2) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     176],
+              ['Crime',      0],
+              ['Infrastructure',  101],
+              ['Social Unrest', 1885],
+              ['Politics',    1999]
+            ]);
+          }
+          else if (i == 3) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     1806],
+              ['Crime',      0],
+              ['Infrastructure',  1989],
+              ['Social Unrest', 1277],
+              ['Politics',    1965]
+            ]);
+          }
+          else if (i == 4) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     64222],
+              ['Crime',      11634],
+              ['Infrastructure',  14243],
+              ['Social Unrest', 7358],
+              ['Politics',    27928]
+            ]);
+          }
+          else if (i == 5) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     5889],
+              ['Crime',      10222],
+              ['Infrastructure',  9805],
+              ['Social Unrest', 5109],
+              ['Politics',    15878]
+            ]);
+          }
+          else if (i == 6) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     14184],
+              ['Crime',      23870],
+              ['Infrastructure',  3685],
+              ['Social Unrest', 4669],
+              ['Politics',    9115]
+            ]);
+          }
+          else if (i == 7) {
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     622],
+              ['Crime',      10],
+              ['Infrastructure',  1998],
+              ['Social Unrest', 1297],
+              ['Politics',    1114]
+            ]);
+          }
+          else if (i == 8){
+            var data = google.visualization.arrayToDataTable([
+              ['Topic', 'Number Of Tweets'],
+              ['Environment',     8829],
+              ['Crime',      7911],
+              ['Infrastructure',  3397],
+              ['Social Unrest', 543],
+              ['Politics',    6950]
+            ]);
+          }
+
+
+
+                var options = {
+                  title: 'Tweet Distribution',
+                  is3D: true,
+                };
+                var node        = document.createElement('div'),
+                        infoWindow  = new google.maps.InfoWindow(),
+                        chart       = new google.visualization.PieChart(node);
+
+                        chart.draw(data, options);
+                        infoWindow.setContent(node);
+                        infoWindow.open(marker.getMap(),marker);
+              }
+
+                  function map_range(value, low1, high1, low2, high2) {
+
+                      return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+                  }
+
+                  google.charts.load("current", {packages:["corechart"]});
+
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjJ0UxhS2ZB0v3ejzyP7-gNWW3QINEQBk&libraries=places,geometry&callback=initMap"
+    async defer></script>
+<script src="https://gitcdn.link/cdn/darkskyapp/skycons/master/skycons.js"></script>
+
+
+  </body>
+  </html>
