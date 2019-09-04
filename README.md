@@ -1,4 +1,4 @@
-# CSE 535 Project 4
+# Search Analytics using dissected Twitter Data
 A PHP based website used to search tweets indexed on Apache Solr.
 
 Website Link:
